@@ -7,7 +7,12 @@ inputs:
     required: true
   signing-key:
     description: "The private key used to sign the package index (PEM format)"
-    required: true
+    required: false
+    default: ""
+  signing-key-name:
+    description: "The name of the key used to sign the built packages (not including the .rsa/.rsa.pub suffix)"
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -16,7 +21,7 @@ runs:
     - name: Collect package versions
       shell: bash
       env:
-        REPO_DIR: ${{ inputs.repo-dir }}
+        REPO_DIR: "${{ inputs.repo-dir }}"
       run: |
         set -euo pipefail
 
@@ -26,8 +31,9 @@ runs:
     - name: Build package index
       shell: bash
       env:
-        REPO_DIR: ${{ inputs.repo-dir }}
-        SIGNING_KEY: ${{ inputs.signing-key }}
+        REPO_DIR: "${{ inputs.repo-dir }}"
+        SIGNING_KEY: "${{ inputs.signing-key }}"
+        SIGNING_KEY_NAME: "${{ inputs.signing-key-name }}"
       run: |
         set -euo pipefail
 
