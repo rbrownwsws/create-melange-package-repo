@@ -3,9 +3,6 @@ name: "Create a package repo for a single melange package"
 description: "Create a package repo for a single melange package"
 
 inputs:
-  repo-dir:
-    description: "Path to where the package repo should be created"
-    required: true
   signing-key:
     description: "The private key used to sign the package index (PEM format)"
     required: false
@@ -15,14 +12,29 @@ inputs:
     required: false
     default: ""
 
+outputs:
+  repo-dir:
+    description: "Path to where the package repo was created"
+    value: "${{ steps.mk-repo-dir.outputs.repo-dir }}"
+
 runs:
   using: "composite"
 
   steps:
+    - name: Create package repo directory
+      id: mk-repo-dir
+      shell: bash
+      run: |
+        set -euo pipefail
+        
+        REPO_DIR=$(mktemp -d --tmpdir="${RUNNER_TEMP}")
+        
+        echo "repo-dir=${REPO_DIR}" >> "${GITHUB_OUTPUT}"
+
     - name: Collect package versions
       shell: bash
       env:
-        REPO_DIR: "${{ inputs.repo-dir }}"
+        REPO_DIR: "${{ steps.mk-repo-dir.outputs.repo-dir }}"
       run: |
         set -euo pipefail
 
@@ -33,7 +45,7 @@ runs:
     - name: Build package index
       shell: bash
       env:
-        REPO_DIR: "${{ inputs.repo-dir }}"
+        REPO_DIR: "${{ steps.mk-repo-dir.outputs.repo-dir }}"
         SIGNING_KEY: "${{ inputs.signing-key }}"
         SIGNING_KEY_NAME: "${{ inputs.signing-key-name }}"
       run: |
