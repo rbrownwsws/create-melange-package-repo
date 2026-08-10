@@ -25,8 +25,9 @@ runs:
       run: |
         set -euo pipefail
 
-        chmod +x "${GITHUB_ACTION_PATH}/collect-package-versions.sh"
-        "${GITHUB_ACTION_PATH}/collect-package-versions.sh"
+        SCRIPT="${GITHUB_ACTION_PATH}/collect-package-versions.sh"
+        chmod +x "${SCRIPT}"
+        "${SCRIPT}"
 
     - name: Build package index
       shell: bash
@@ -37,5 +38,6 @@ runs:
       run: |
         set -euo pipefail
 
-        chmod +x "${GITHUB_ACTION_PATH}/index-packages.sh"
-        "${GITHUB_ACTION_PATH}/index-packages.sh"
+        SCRIPT="${GITHUB_ACTION_PATH}/index-packages.sh"
+        chmod +x "${SCRIPT}"
+        "${SCRIPT}"
