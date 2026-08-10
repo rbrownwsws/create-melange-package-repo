@@ -17,6 +17,8 @@ echo "Creating indexes for repo at ${REPO_DIR}"
 
 SIGNING_ARGS=()
 if [[ -n "${SIGNING_KEY:-}" ]]; then
+  echo "::notice::The package index will be signed with \"${SIGNING_KEY_NAME}\""
+
   # Get a temporary dir to store the private signing key
   SIGNING_KEY_DIR=$(mktemp -d --tmpdir="${RUNNER_TEMP}")
   SIGNING_KEY_FILE="${SIGNING_KEY_DIR}/${SIGNING_KEY_NAME}.rsa"
@@ -33,6 +35,8 @@ if [[ -n "${SIGNING_KEY:-}" ]]; then
   openssl rsa -in "${SIGNING_KEY_FILE}" -pubout -out "${REPO_DIR}/${SIGNING_KEY_NAME}.rsa.pub"
 
   SIGNING_ARGS=("--signing-key=${SIGNING_KEY_FILE}")
+else
+  echo "::notice::The package index will not be signed"
 fi
 
 for ARCH_DIR in "${REPO_DIR}"/*; do
