@@ -62,13 +62,12 @@ while true; do
     for package in "${packages[@]}"; do
       package_filename=$(jq -r '.name' <<<"${package}")
       package_url=$(jq -r '.url' <<<"${package}")
-      package_prefix="${package_filename%.apk}"
 
       echo ""
-      echo "${package_prefix}:"
+      echo "${package_filename}:"
 
-      if [[ ! "${package_prefix}" =~ ^(.+)-([^-]+)-r([0-9]+)-([^-]+)-([^-]+)$ ]]; then
-          echo "::error::Failed to parse package filename: ${package_prefix}"
+      if [[ ! "${package_filename}" =~ ^(.+)-([^-]+)-r([0-9]+)-([^-]+)-([^-]+).apk$ ]]; then
+          echo "::error::Failed to parse package filename: ${package_filename}"
           exit 1
       fi
 
@@ -80,20 +79,20 @@ while true; do
 
       # TODO: What do we do with distro? Error out if not what we expect?
 
-      package_repo_prefix="${package_name}-${package_version}-r${package_epoch}"
+      repo_package_prefix="${package_name}-${package_version}-r${package_epoch}"
 
       target_dir="${REPO_DIR}/${package_arch}"
       mkdir -p "${target_dir}"
 
       echo "  - Downloading \"${package_filename}\" ..."
-      curl -sSfL "${AUTH_HEADER[@]}" -o "${target_dir}/${package_repo_prefix}.apk" "${package_url}"
+      curl -sSfL "${AUTH_HEADER[@]}" -o "${target_dir}/${repo_package_prefix}.apk" "${package_url}"
 
-      mapfile -t attests < <(jq -c --arg package_prefix "${package_prefix}" '.[] | select(.name | startswith($package_prefix))' <<<"${attests_json}")
+      mapfile -t attests < <(jq -c --arg prefix "${package_filename}" '.[] | select(.name | startswith($prefix))' <<<"${attests_json}")
       for attest in "${attests[@]}"; do
         attest_filename=$(jq -r '.name' <<<"${attest}")
         attest_url=$(jq -r '.url' <<<"${package}")
 
-        if [[ ! "${attest_filename}" =~ ^${package_prefix}(.*)\.sigstore.json$ ]]; then
+        if [[ ! "${attest_filename}" =~ ^${package_filename}(.*)\.sigstore.json$ ]]; then
           echo "::error::Failed to parse attest filename: ${attest_filename}"
           exit 1
         fi
@@ -101,7 +100,7 @@ while true; do
         attest_qualifier="${BASH_REMATCH[1]}"
 
         echo "  - Downloading \"${attest_filename}\" ..."
-        curl -sSfL "${AUTH_HEADER[@]}" -o "${target_dir}/${package_repo_prefix}${attest_qualifier}.sigstore.json" "${attest_url}"
+        curl -sSfL "${AUTH_HEADER[@]}" -o "${target_dir}/${repo_package_prefix}${attest_qualifier}.sigstore.json" "${attest_url}"
       done
     done
 
