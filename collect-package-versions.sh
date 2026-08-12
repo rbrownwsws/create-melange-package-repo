@@ -90,7 +90,7 @@ while true; do
       mapfile -t attests < <(jq -c --arg prefix "${package_filename}" '.[] | select(.name | startswith($prefix))' <<<"${attests_json}")
       for attest in "${attests[@]}"; do
         attest_filename=$(jq -r '.name' <<<"${attest}")
-        attest_url=$(jq -r '.url' <<<"${package}")
+        attest_url=$(jq -r '.url' <<<"${attest}")
 
         if [[ ! "${attest_filename}" =~ ^${package_filename}(.*)\.sigstore.json$ ]]; then
           echo "::error::Failed to parse attest filename: ${attest_filename}"
