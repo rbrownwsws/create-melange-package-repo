@@ -79,13 +79,13 @@ while true; do
 
       # TODO: What do we do with distro? Error out if not what we expect?
 
-      repo_package_prefix="${package_name}-${package_version}-r${package_epoch}"
+      repo_package_filename="${package_name}-${package_version}-r${package_epoch}.apk"
 
       target_dir="${REPO_DIR}/${package_arch}"
       mkdir -p "${target_dir}"
 
       echo "  - Downloading \"${package_filename}\" ..."
-      curl -sSfL "${AUTH_HEADER[@]}" -o "${target_dir}/${repo_package_prefix}.apk" "${package_url}"
+      curl -sSfL "${AUTH_HEADER[@]}" -o "${target_dir}/${repo_package_filename}" "${package_url}"
 
       mapfile -t attests < <(jq -c --arg prefix "${package_filename}" '.[] | select(.name | startswith($prefix))' <<<"${attests_json}")
       for attest in "${attests[@]}"; do
@@ -100,7 +100,7 @@ while true; do
         attest_qualifier="${BASH_REMATCH[1]}"
 
         echo "  - Downloading \"${attest_filename}\" ..."
-        curl -sSfL "${AUTH_HEADER[@]}" -o "${target_dir}/${repo_package_prefix}${attest_qualifier}.sigstore.json" "${attest_url}"
+        curl -sSfL "${AUTH_HEADER[@]}" -o "${target_dir}/${repo_package_filename}${attest_qualifier}.sigstore.json" "${attest_url}"
       done
     done
 
